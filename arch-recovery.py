@@ -6,6 +6,10 @@ from pathlib import Path
 import networkx as nx
 import matplotlib.pyplot as plt
 
+import matplotlib
+matplotlib.use("Agg")
+
+
 # Suppress warnings for Syntax
 import warnings
 warnings.filterwarnings("ignore", category=SyntaxWarning)
@@ -99,7 +103,9 @@ def draw_graph(G, size, **args):
     **args
   )
 
-  plt.show()
+  plt.savefig("./graphs/Figure.png", bbox_inches="tight")
+  plt.close()
+
 
 # Make a directed graph of dependencies, where an edge from A to B means that A imports B.
 def dependencies_digraph(code_root_folder):
@@ -144,8 +150,6 @@ def package_dependencies_digraph(code_root_folder, depth=3):
           G.add_edge(source_pkg, target_pkg)
 
   return G
-
-
 
 # Looking at the directed graph
 DG = package_dependencies_digraph(CODE_ROOT_FOLDER)
