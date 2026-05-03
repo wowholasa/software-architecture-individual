@@ -188,6 +188,9 @@ def package_dependencies_digraph(code_root_folder, depth=3):
 DG = package_dependencies_digraph(CODE_ROOT_FOLDER)
 draw_graph(DG, "architecture-packages")
 
+DG_2 = package_dependencies_digraph(CODE_ROOT_FOLDER, depth=2)
+draw_graph(DG_2, "architecture-packages-depth-2")
+
 DG_core = DG.subgraph(
   [n for n in DG.nodes if n.startswith("zeeguu.core")]
 )
