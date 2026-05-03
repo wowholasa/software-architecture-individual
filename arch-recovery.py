@@ -4,11 +4,7 @@ import ast
 import pathlib
 from pathlib import Path
 import networkx as nx
-import matplotlib.pyplot as plt
-
-import matplotlib
-matplotlib.use("Agg")
-
+from pyvis.network import Network
 
 # Suppress warnings for Syntax
 import warnings
@@ -92,19 +88,56 @@ assert(unique_code_imports != bookmark_imports)
 
 # Plot
 # a function to draw a graph
-def draw_graph(G, size, **args):
-  plt.figure(figsize=size)
-  
-  pos = nx.kamada_kawai_layout(G)
+def draw_graph(G, figure_name, height="900px", width="100%", notebook=False):
+  """
+  Draw a directed graph using PyVis and save it as an interactive HTML file.
+  Edge A -> B means A imports B.
+  """
 
-  nx.draw(
-    G,
-    pos,
-    **args
+  os.makedirs("./graphs", exist_ok=True)
+
+  net = Network(
+    height=height,
+    width=width,
+    directed=True,
+    notebook=notebook,
+    bgcolor="#ffffff",
+    font_color="#000000",
   )
 
-  plt.savefig("./graphs/Figure.png", bbox_inches="tight")
-  plt.close()
+  # Optional physics layout settings
+  net.barnes_hut(
+    gravity=-30000,
+    central_gravity=0.3,
+    spring_length=200,
+    spring_strength=0.05,
+    damping=0.09,
+    overlap=0,
+  )
+
+  # Add nodes
+  for node in G.nodes:
+    net.add_node(
+      node,
+      label=node,
+      title=node,
+    )
+
+  # Add edges
+  for source, target in G.edges:
+    net.add_edge(
+      source,
+      target,
+      title=f"{source} imports {target}",
+    )
+
+  # Add interaction buttons
+  net.show_buttons(filter_=["physics"])
+
+  output_path = f"./graphs/{figure_name}.html"
+  net.write_html(output_path)
+
+  print(f"Saved interactive graph to: {output_path}")
 
 
 # Make a directed graph of dependencies, where an edge from A to B means that A imports B.
@@ -153,4 +186,9 @@ def package_dependencies_digraph(code_root_folder, depth=3):
 
 # Looking at the directed graph
 DG = package_dependencies_digraph(CODE_ROOT_FOLDER)
-draw_graph(DG, (40,40), with_labels=True, font_size=9)
+draw_graph(DG, "architecture-packages")
+
+DG_core = DG.subgraph(
+  [n for n in DG.nodes if n.startswith("zeeguu.core")]
+)
+draw_graph(DG_core, "architecture-packages-core")
