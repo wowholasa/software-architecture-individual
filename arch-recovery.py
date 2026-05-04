@@ -10,10 +10,9 @@ from pyvis.network import Network
 import warnings
 warnings.filterwarnings("ignore", category=SyntaxWarning)
 
-
 # Print the current working directory to verify that the script is being run from the correct location.
 cwd = os.getcwd()
-print(cwd)
+# print(cwd) # Helper line to check that the current working directory is correct.
 
 # Set path to repo, which you are doing architecture recovery on.
 CODE_ROOT_FOLDER = "../zeeguu-api/"
@@ -184,14 +183,24 @@ def package_dependencies_digraph(code_root_folder, depth=3):
 
   return G
 
-# Looking at the directed graph
-DG = package_dependencies_digraph(CODE_ROOT_FOLDER)
-draw_graph(DG, "architecture-packages")
+# Creating dependency graphs at different levels of granularity and saving them as interactive HTML files.
+DG_3 = package_dependencies_digraph(CODE_ROOT_FOLDER)
+draw_graph(DG_3, "architecture-packages")
 
 DG_2 = package_dependencies_digraph(CODE_ROOT_FOLDER, depth=2)
 draw_graph(DG_2, "architecture-packages-depth-2")
 
-DG_core = DG.subgraph(
-  [n for n in DG.nodes if n.startswith("zeeguu.core")]
+DG_4 = package_dependencies_digraph(CODE_ROOT_FOLDER, depth=4)
+draw_graph(DG_4, "architecture-packages-depth-4")
+
+# Sub graphs of specific packages
+# Core package, which contains the main domain logic of the application, including models, services, and repositories.
+DG_core = DG_3.subgraph(
+  [n for n in DG_3.nodes if n.startswith("zeeguu.core")]
 )
 draw_graph(DG_core, "architecture-packages-core")
+
+DG_model = DG_4.subgraph(
+  [n for n in DG_4.nodes if n.startswith("zeeguu.core.model")]
+) 
+draw_graph(DG_model, "architecture-packages-core-model")
